@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>نبض آرامش | گفت‌وگو با استاد دارستانی</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
+:root{--ink:#17243b;--cream:#fffaf0;--teal:#16a6a1;--gold:#ffca62}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17243b;font-family:Vazirmatn,Tahoma,sans-serif;touch-action:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;inset:0;pointer-events:none;color:white}
+.top{position:absolute;top:12px;right:12px;left:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pill{background:#14233bdc;border:1px solid #ffffff35;border-radius:16px;padding:9px 13px;box-shadow:0 8px 25px #07152a55;backdrop-filter:blur(8px);font-size:13px}
+.pill b{color:#ffdc88}
+.meter{width:116px;height:9px;background:#ffffff35;border-radius:20px;overflow:hidden;margin-top:5px}
+.meter i{display:block;width:65%;height:100%;background:linear-gradient(90deg,#43d6a4,#ffe07c);border-radius:20px}
+#hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#14233bdc;padding:10px 16px;border-radius:16px;font-size:13px;text-align:center;max-width:90%;border:1px solid #ffffff30}
+#talk{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,94vw);max-height:76vh;overflow:auto;background:linear-gradient(145deg,#fffdf7,#f2f7ff);color:var(--ink);border:3px solid #ffffff;border-radius:25px;box-shadow:0 24px 80px #07152acc;padding:20px;display:none;z-index:5}
+#talk.show{display:block}
+.thead{display:flex;align-items:center;gap:12px;border-bottom:1px solid #dce5ed;padding-bottom:12px;margin-bottom:12px}
+.avatar{width:54px;height:54px;border-radius:18px;background:linear-gradient(145deg,#b9f0e7,#dce8ff);display:grid;place-items:center;font-size:29px;flex:none}
+.thead h2{font-size:20px;margin:0 0 2px}.thead small{color:#60718b}
+#speaker{font-size:15px;font-weight:900;color:#168f8a;margin-bottom:7px}
+#dialogue{font-size:clamp(17px,2.5vw,21px);line-height:2.05;font-weight:600;white-space:pre-line}
+.actions{display:flex;gap:9px;justify-content:flex-start;flex-wrap:wrap;margin-top:16px}
+button{font:800 15px Vazirmatn,Tahoma;border:0;border-radius:14px;padding:12px 18px;background:#13a49d;color:white;box-shadow:0 5px 0 #08736f;cursor:pointer}
+button.secondary{background:#e6edf6;color:#23354e;box-shadow:0 5px 0 #c3cfdd}
+#toast{position:fixed;top:78px;left:50%;transform:translateX(-50%);background:#fff7dc;color:#26344a;border:2px solid white;border-radius:16px;padding:10px 16px;font-weight:800;display:none;z-index:4;box-shadow:0 8px 30px #07152a55}
+#stick{position:fixed;bottom:34px;left:25px;width:118px;height:118px;border-radius:50%;background:#ffffff22;border:2px solid #ffffff55;z-index:3;touch-action:none}
+#nub{position:absolute;width:48px;height:48px;left:33px;top:33px;border-radius:50%;background:#fff9;border:2px solid white;box-shadow:0 4px 14px #10243b66}
+#interact{position:fixed;bottom:48px;right:25px;width:76px;height:76px;border-radius:50%;font-size:25px;padding:0;z-index:3}
+#start{position:fixed;inset:0;z-index:10;background:linear-gradient(135deg,#14233b,#246c78 58%,#e4a95b);display:grid;place-items:center;padding:20px;color:white;text-align:center}
+.startcard{max-width:620px;background:#10243bd9;border:1px solid #ffffff44;border-radius:28px;padding:28px;box-shadow:0 20px 70px #08152a88}
+.startcard h1{font-size:clamp(30px,6vw,48px);margin:0 0 8px;color:#ffdb91}.startcard p{font-size:17px;line-height:2;color:#eef8ff}
+.startcard button{font-size:18px;padding:14px 28px}
+#end{display:none;position:fixed;inset:0;z-index:9;background:#10243beF;color:white;place-items:center;text-align:center;padding:24px}
+#end h2{font-size:34px;color:#ffdc8d}
+@media(min-width:800px){#stick{width:132px;height:132px}#nub{left:39px;top:39px}}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div class="hud">
+ <div class="top">
+  <div class="pill">🏫 مدرسه امام جواد (ع)<br><b>ماموریت: گفت‌وگوی آرام</b></div>
+  <div class="pill">🌿 آرامش <b id="score">۶۵</b><div class="meter"><i id="bar"></i></div></div>
+ </div>
+ <div id="hint">با جوی‌استیک حرکت کن و به استاد نزدیک شو؛ برای شروع گفت‌وگو دکمه ✦ را بزن.</div>
+</div>
+<div id="toast"></div>
+<div id="stick"><div id="nub"></div></div>
+<button id="interact" aria-label="تعامل">✦</button>
+<div id="talk">
+ <div class="thead"><div class="avatar" id="face">👨🏻‍⚕️</div><div><h2 id="talktitle">گفت‌وگو</h2><small>راه‌های شناخت و مدیریت خشم</small></div></div>
+ <div id="speaker"></div><div id="dialogue"></div>
+ <div class="actions"><button id="next">ادامه گفت‌وگو ←</button><button class="secondary" id="close">فعلاً بستن</button></div>
+</div>
+<div id="start"><div class="startcard">
+ <div style="font-size:54px">🩺🌿</div><h1>نبض آرامش</h1>
+ <p>یک گفت‌وگوی داستانی در حیاط مدرسه امام جواد (ع)<br>با حضور استاد دارستانی با لباس پزشکی و یک دانش‌آموز.<br><b>هدف:</b> شناخت خشم و تمرین واکنش‌های سنجیده.</p>
+ <button id="begin">ورود به حیاط مدرسه</button>
+ <p style="font-size:12px;color:#c9d8e9;margin-bottom:0">ساخته شده توسط محمد صدرا اسدی</p>
+ </div></div>
+<div id="end"><div><div style="font-size:60px">🌱</div><h2>گفت‌وگو به پایان رسید</h2><p style="font-size:19px;line-height:2">یادت باشد: احساس خشم طبیعی است؛ مهم این است که با آن چه رفتاری انتخاب می‌کنیم.<br>مکث، نفس آرام، نام‌گذاری احساس و گفت‌وگوی محترمانه می‌توانند کمک‌کننده باشند.</p><button onclick="location.reload()">شروع دوباره</button><p>ساخته شده توسط محمد صدرا اسدی</p></div></div>
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+let W=0,H=0,dpr=1,started=false,dialogOpen=false,step=0,score=65;
+const world={w:1500,h:1000};
+const player={x:460,y:600,dx:0,dy:0};
+const teacher={x:850,y:500},student={x:610,y:560};
+let joy={x:0,y:0,active:false,id:null},keys={};
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+function rr(x,y,w,h,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function drawPerson(x,y,type,scale=1){
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+ // shadow
+ ctx.fillStyle='#24394a35';ctx.beginPath();ctx.ellipse(0,28,25,8,0,0,Math.PI*2);ctx.fill();
+ // legs
+ rr(-14,7,11,25,5,type==='player'?'#294d87':'#26344c');rr(3,7,11,25,5,type==='player'?'#294d87':'#26344c');
+ // body
+ if(type==='doctor'){rr(-22,-35,44,48,12,'#f8fbff');rr(-5,-34,10,48,3,'#d9e6f0');rr(-18,-19,12,3,2,'#6aa6a7');rr(7,-19,12,3,2,'#6aa6a7');}
+ else rr(-21,-34,42,44,12,type==='student'?'#f0a64c':'#36a6a0');
+ // neck + head
+ rr(-6,-43,12,13,4,'#d99c72');
+ ctx.fillStyle='#e8b38d';ctx.beginPath();ctx.arc(0,-54,19,0,Math.PI*2);ctx.fill();
+ // hair
+ ctx.fillStyle=type==='doctor'?'#354252':'#3a2b2b';ctx.beginPath();ctx.arc(0,-61,19,Math.PI,Math.PI*2);ctx.lineTo(18,-52);ctx.quadraticCurveTo(7,-59,0,-54);ctx.lineTo(-18,-52);ctx.closePath();ctx.fill();
+ // eyes
+ ctx.fillStyle='#253247';ctx.beginPath();ctx.arc(-6,-54,1.8,0,7);ctx.arc(6,-54,1.8,0,7);ctx.fill();
+ ctx.strokeStyle='#9a514b';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,-48,5,.15,Math.PI-.15);ctx.stroke();
+ if(type==='doctor'){ctx.strokeStyle='#5d7b91';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-9,-34);ctx.lineTo(-2,-20);ctx.lineTo(4,-34);ctx.stroke();ctx.fillStyle='#3d91a0';ctx.beginPath();ctx.arc(0,-16,4,0,7);ctx.fill()}
+ ctx.restore();
+}
+function drawSpeech(x,y,text,accent='#fff4d5'){
+ ctx.save();ctx.font='700 14px Vazirmatn,Tahoma';let words=text.split(' '),lines=[],line='';
+ for(let word of words){let test=line?line+' '+word:word;if(ctx.measureText(test).width>210&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);
+ let width=Math.min(230,Math.max(100,...lines.map(l=>ctx.measureText(l).width+22))),height=lines.length*21+18;
+ rr(x-width/2,y-height-18,width,height,12,accent);ctx.fillStyle='#24344a';ctx.textAlign='center';ctx.textBaseline='middle';
+ lines.forEach((l,i)=>ctx.fillText(l,x,y-height+18+i*21));ctx.fillStyle=accent;ctx.beginPath();ctx.moveTo(x-7,y-18);ctx.lineTo(x+7,y-18);ctx.lineTo(x,y-7);ctx.fill();ctx.restore();
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ let camX=Math.max(0,Math.min(world.w-W,player.x-W/2)),camY=Math.max(0,Math.min(world.h-H,player.y-H/2));
+ ctx.save();ctx.translate(-camX,-camY);
+ // ground
+ ctx.fillStyle='#b8d8b7';ctx.fillRect(0,0,world.w,world.h);
+ // patterned courtyard
+ for(let y=220;y<900;y+=58)for(let x=80;x<1450;x+=58){ctx.fillStyle=((x+y)/58)%2?'#d8e6d2':'#d0e0cc';ctx.fillRect(x,y,56,56)}
+ // school building
+ rr(90,65,1320,220,24,'#e9d2ad');rr(90,65,1320,45,16,'#bd805a');
+ for(let x=150;x<1370;x+=180){rr(x,125,95,100,10,'#6d9ca5');ctx.strokeStyle='#f7e6c7';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x+47,125);ctx.lineTo(x+47,225);ctx.moveTo(x,175);ctx.lineTo(x+95,175);ctx.stroke()}
+ rr(610,90,280,42,12,'#fff6df');ctx.fillStyle='#76533f';ctx.font='800 21px Vazirmatn';ctx.textAlign='center';ctx.fillText('مدرسه امام جواد (ع)',750,118);
+ // trees and benches
+ for(let x of [170,1320]){ctx.fillStyle='#86583d';ctx.fillRect(x-8,360,16,90);ctx.fillStyle='#4c9b68';ctx.beginPath();ctx.arc(x,350,48,0,7);ctx.fill();ctx.beginPath();ctx.arc(x-27,370,28,0,7);ctx.fill();ctx.beginPath();ctx.arc(x+28,370,28,0,7);ctx.fill()}
+ rr(1040,690,180,18,7,'#9a6847');rr(1050,665,12,35,4,'#795139');rr(1195,665,12,35,4,'#795139');
+ // characters
+ drawPerson(student.x,student.y,'student',1.08);drawPerson(teacher.x,teacher.y,'doctor',1.2);drawPerson(player.x,player.y,'player',1.08);
+ drawSpeech(teacher.x,teacher.y-78,'استاد دارستانی • مشاور سلامت','#fff8e8');
+ drawSpeech(student.x,student.y-75,'دانش‌آموز • علی','#e8f7ff');
+ // labels
+ ctx.font='700 14px Vazirmatn';ctx.textAlign='center';ctx.fillStyle='#203b4c';ctx.fillText('استاد دارستانی',teacher.x,teacher.y+50);ctx.fillText('علی',student.x,student.y+48);ctx.fillText('شما',player.x,player.y+48);
+ ctx.restore();
+ requestAnimationFrame(draw);
+}
+draw();
+function update(){if(started&&!dialogOpen){let ax=joy.x,ay=joy.y;player.x+=ax*3.1;player.y+=ay*3.1;player.x=Math.max(40,Math.min(world.w-40,player.x));player.y=Math.max(320,Math.min(world.h-40,player.y))}requestAnimationFrame(update)}update();
+const stick=document.getElementById('stick'),nub=document.getElementById('nub');
+function setJoy(e){let r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.hypot(dx,dy),max=43;if(len>max){dx=dx/len*max;dy=dy/len*max}joy.x=dx/max;joy.y=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}
+stick.addEventListener('pointerdown',e=>{joy.active=true;stick.setPointerCapture(e.pointerId);setJoy(e)});
+stick.addEventListener('pointermove',e=>{if(joy.active)setJoy(e)});
+function stopJoy(){joy.active=false;joy.x=joy.y=0;nub.style.transform='translate(0,0)'}
+stick.addEventListener('pointerup',stopJoy);stick.addEventListener('pointercancel',stopJoy);
+const lines=[
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'استاد، امروز در کلاس وقتی یکی از هم‌کلاسی‌هایم حرفم را قطع کرد، خیلی عصبانی شدم. احساس کردم اصلاً به من احترام نگذاشته است. تمام مدت به آن اتفاق فکر می‌کردم و نمی‌دانستم چطور باید واکنش نشان بدهم. چطور می‌توانم جلوی این را بگیرم که عصبانیت، تصمیم‌هایم را کنترل کند؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'اول از همه باید بدانی که خشم، مثل بقیه احساسات انسان، به‌خودی‌خود بد یا عجیب نیست. خشم گاهی به ما خبر می‌دهد که چیزی برایمان مهم بوده، احساس بی‌عدالتی کرده‌ایم یا یکی از مرزهایمان رعایت نشده است. مسئله اصلی این نیست که هرگز عصبانی نشویم؛ مسئله این است که هنگام عصبانیت، رفتاری انتخاب کنیم که به خودمان و دیگران آسیب نزند.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'اما استاد، وقتی عصبانی می‌شوم، انگار همه چیز خیلی سریع اتفاق می‌افتد. بعداً ممکن است بفهمم می‌توانستم بهتر جواب بدهم، ولی همان لحظه فقط می‌خواهم فوری جواب بدهم. آیا راهی هست که در همان لحظه کمی فرصت پیدا کنم؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'بله. یکی از بهترین تمرین‌ها «مکث کوتاه» است. وقتی متوجه شدی بدنت منقبض شده یا صدایت دارد بلندتر می‌شود، لازم نیست همان لحظه پاسخ بدهی. اگر شرایط اجازه می‌دهد چند قدم از بحث فاصله بگیر، شانه‌هایت را رها کن و چند نفس آرام و معمولی بکش. بازدم را کمی طولانی‌تر کن. همین فاصله کوتاه کمک می‌کند از واکنش عجولانه به انتخاب آگاهانه نزدیک شوی.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'گاهی حتی نمی‌دانم دقیقاً چرا ناراحتم. فقط می‌دانم عصبانی‌ام. مثلاً شاید از حرف دوستم ناراحت شده باشم، ولی دلیلش را درست متوجه نمی‌شوم. در این شرایط چه کار کنم؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'احساست را با چند کلمه نام‌گذاری کن. از خودت بپرس: «الان دقیقاً چه احساسی دارم؟» شاید زیر خشم، ناراحتی، خجالت، نگرانی یا احساس نادیده گرفته شدن وجود داشته باشد. بعد از خودت بپرس: «چه چیزی باعث شد این احساس به وجود بیاید؟» لازم نیست فوراً جواب کامل پیدا کنی. همین که احساس و علت احتمالی‌اش را تشخیص بدهی، یک قدم مهم برداشته‌ای.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'اگر طرف مقابل واقعاً حرف بدی زده باشد چه؟ آیا آرام ماندن یعنی باید سکوت کنم و اجازه بدهم هر طور خواست با من رفتار کند؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'نه، آرام بودن به معنی پذیرفتن رفتار نادرست نیست. می‌توانی قاطع و محترمانه از خودت دفاع کنی. به‌جای توهین یا سرزنش، درباره رفتار مشخص و احساست حرف بزن. مثلاً بگو: «وقتی وسط حرفم می‌پری، احساس می‌کنم شنیده نمی‌شوم. لطفاً اجازه بده حرفم را تمام کنم.» این روش هم مرز تو را روشن می‌کند و هم احتمال تبدیل اختلاف به دعوا را کمتر می‌کند.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'پس بهتر است به‌جای اینکه بگویم «تو همیشه بی‌احترامی می‌کنی»، درباره همان اتفاق و احساسم صحبت کنم. اگر هنوز خیلی عصبانی بودم، می‌توانم بگویم بعداً درباره‌اش حرف می‌زنیم؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'دقیقاً. می‌توانی بگویی: «الان ناراحتم و نمی‌خواهم با عصبانیت حرف بزنم. کمی زمان می‌خواهم تا آرام‌تر شوم، بعد صحبت می‌کنیم.» البته بهتر است واقعاً در زمان مناسبی به گفت‌وگو برگردی. فاصله گرفتن برای آرام شدن است، نه برای تنبیه کردن یا نادیده گرفتن طرف مقابل.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'برای اینکه کمتر زود عصبانی شوم، فقط باید همان لحظه تمرین کنم یا کارهای دیگری هم هست که در طول روز کمک کند؟'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'عادت‌های روزانه هم مهم‌اند. خواب کافی، فعالیت بدنی متعادل، استراحت بین کارها و صحبت کردن با یک فرد قابل اعتماد می‌توانند تحمل فشار را بهتر کنند. اتفاقات ناراحت‌کننده را هم می‌توانی در دفترچه‌ای بنویسی: چه اتفاقی افتاد، چه احساسی داشتی و دفعه بعد چه واکنش بهتری می‌توانی امتحان کنی. اگر خشم خیلی شدید یا تکرارشونده است و در زندگی روزمره‌ات مشکل ایجاد می‌کند، کمک گرفتن از مشاور مدرسه یا یک بزرگسال مورد اعتماد کار عاقلانه‌ای است.'},
+ {who:'دانش‌آموز علی',face:'🧑🏻‍🎓',text:'فکر می‌کنم حالا یک برنامه دارم: اول مکث می‌کنم، چند نفس آرام می‌کشم، احساسم را نام می‌گذارم و بعد محترمانه می‌گویم چه چیزی ناراحتم کرده است. اگر نتوانستم آرام شوم، از یک فرد قابل اعتماد کمک می‌گیرم.'},
+ {who:'استاد دارستانی',face:'👨🏻‍⚕️',text:'آفرین علی. یادت باشد مدیریت خشم یک مهارت است و مثل هر مهارت دیگری با تمرین بهتر می‌شود. قرار نیست همیشه بی‌نقص عمل کنی. اگر یک بار واکنش مناسبی نداشتی، می‌توانی مسئولیت رفتارت را بپذیری، عذرخواهی کنی و برای دفعه بعد راه بهتری انتخاب کنی. قدرت واقعی، نادیده گرفتن احساسات نیست؛ شناختن آن‌ها و انتخاب رفتار سنجیده است.'}
+];
+function openTalk(){dialogOpen=true;document.getElementById('talk').classList.add('show');renderLine()}
+function renderLine(){let l=lines[step];document.getElementById('face').textContent=l.face;document.getElementById('talktitle').textContent='گفت‌وگوی حیاط مدرسه';document.getElementById('speaker').textContent=l.who;document.getElementById('dialogue').textContent=l.text;document.getElementById('next').textContent=step===lines.length-1?'پایان گفت‌وگو ✓':'ادامه گفت‌وگو ←';}
+document.getElementById('next').onclick=()=>{if(step<lines.length-1){step++;renderLine();score=Math.min(100,score+3);document.getElementById('score').textContent=score.toLocaleString('fa-IR');document.getElementById('bar').style.width=score+'%'}else{document.getElementById('talk').classList.remove('show');document.getElementById('end').style.display='grid';dialogOpen=true}};
+document.getElementById('close').onclick=()=>{document.getElementById('talk').classList.remove('show');dialogOpen=false};
+document.getElementById('interact').onclick=()=>{if(!started)return;let d=Math.hypot(player.x-teacher.x,player.y-teacher.y);if(d<220||step>0)openTalk();else toast('به استاد دارستانی نزدیک‌تر شو تا گفت‌وگو آغاز شود.')};
+function toast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>el.style.display='none',2200)}
+document.getElementById('begin').onclick=()=>{document.getElementById('start').style.display='none';started=true;toast('به سمت استاد حرکت کن و دکمه ✦ را بزن.')};
+</script>
+</body>
+  </html>
